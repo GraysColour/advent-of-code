@@ -1,0 +1,13 @@
+## Git line endings
+
+# Set default to automatically normalize line endings.
+*              text=auto
+
+# Windows batch scripts always need CRLF line endings
+*.[cC][mM][dD] text eol=crlf
+
+# Linux batch scripts always need LF line endings
+*.sh           text eol=lf
+
+# Do not make changes to .jar files
+*.jar          binary
