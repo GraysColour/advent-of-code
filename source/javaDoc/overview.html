@@ -1,0 +1,53 @@
+<html>
+  <body>
+    <H2> Small "framework" for implementing solutions to
+    <a class="linkColour" href="https://adventofcode.com/">Advent of Code</a>. </H2>
+
+    <H3> Usage: </H3>
+
+    <p> Create a package called "YearYYYY" where YYYY are the 4 digits of the year,
+    for example "Year2022". Do not sub-package it, but ensure it's created at the root.
+
+    <p> Create a class for each day of the puzzles, and name them "DayZ"
+    where Z is the digit of the day, for example: Day7.java.
+
+    <p> Ensure the class
+      <ul>
+        <li> <code>extends DayX</code> </li>
+        <li> Has a main method that instatiates the class and calls: <code>doIt();</code> </li>
+        <li> A constructor that passes handling of command line arguments </li>
+        <li> An implementation for a solver for part 1 </li>
+        <li> Optionally an implementation for a solver for part 2 </li>
+      </ul>
+
+    <p> For example:<pre><code>
+        package Year2022;
+
+        import absbase.DayX;
+        import util.Result;
+
+        public class Day7 extends DayX {
+
+          public static void main(String[] args){
+            new Day7(args).doIt();
+          }
+
+          public Day0(String[] args) {
+            super(args);
+          }
+
+          public Result solve(String input) {
+            ...
+            return Result.createResult(...the result...);
+          }
+
+          Result solvePart2(String input) { // optional
+            return Result.createResult(0L);
+          }
+        }
+    </code></pre>
+
+    <!-- https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html -->
+    <!-- https://docs.oracle.com/en/java/javase/15/docs/specs/man/javadoc.html -->
+  </body>
+</html>
