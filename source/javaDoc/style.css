@@ -1,0 +1,7 @@
+.linkColour {
+  color: lightseagreen !important;
+}
+
+.linkColour:hover {
+  color: #bb7a2a !important;
+}
