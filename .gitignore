@@ -1,4 +1,6 @@
 .vscode/
+javadoc/
+!/source/javaDoc
 libraries/
 run/
 target/

@@ -1,0 +1,13 @@
+-quiet
+-d javadoc
+-use
+-nosince
+-version
+-link https://docs.oracle.com/en/java/javase/11/docs/api
+-windowtitle "GraysColour's Advent of Code"
+-doctitle "GraysColour's Advent of Code"
+-overview source/javaDoc/overview.html
+-header '<p style="text-align:center;font-weight:bold;">GraysColour\'s Advent of Code</p>'
+-bottom 'Copyright © GraysColour. All rights reserved.'
+--add-stylesheet source/javaDoc/style.css
+-sourcepath source base util absbase
