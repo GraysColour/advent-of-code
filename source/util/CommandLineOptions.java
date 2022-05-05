@@ -5,10 +5,53 @@ import java.util.ArrayList;
 
 import base.*;
 
+/**
+ * Handles command line options.
+ *
+ * <p> Handles both options when running a single {@link absbase.DayX}
+ * implementation or when running {@link AllDays}
+ *
+ * @author  GraysColour
+ * @version 1.0
+ * @since   1.0
+ */
+
 public class CommandLineOptions {
 
+  /**
+   * @hidden
+   */
   private CommandLineOptions() {}
 
+
+  /**
+   * Handles arguments for the run of an {@link base.AllDaysI} instance.
+   *
+   * <p> Arguments
+   * <ul>
+   *   <li><code>-h</code> or <code>--help</code></li>
+   *   <li><code>-hf</code> or <code>--helpFileOptions</code></li>
+   * </ul>
+   * <br> prints the corresponding help to the console. Then the program halts.
+   *
+   * <p> Arguments that effects the {@link base.AllDaysI} are handled:
+   * <ul>
+   *   <li><code>-noTime</code> or <code>--noPrintTime</code> sets
+   *       the <code>allDaysI</code> to not print run times</li>
+   *   <li><code>-y</code> or <code>--year</code> sets
+   *       the package years of <code>allDaysI</code></li>
+   *   <li><code>-o</code> or <code>--output</code> set
+   *        <code>Printers</code> to print to the specified file</li>
+   * </ul>
+   *
+   * <p> Arguments that effects a {@link base.DayI} that {@link base.AllDaysI} will
+   * be running, are collected and later passed to the {@link base.DayI}.
+   *
+   * <p> Any <code>Exception</code>, like unknown arguments, causes the help to the printed.
+   *
+   * @param args the original arguments used to call the program.
+   * @param allDaysI the instance to be run.
+   */
   public static void handleAllDaysOptions(String[] args, AllDaysI allDaysI) {
     boolean help = false;
     boolean helpFile = false;
@@ -58,6 +101,48 @@ public class CommandLineOptions {
     allDaysI.setArgs(modifiedArgs.toArray(new String[0]));
   }
 
+  /**
+   * Handles arguments for the run of a {@link base.DayI} extending {@link absbase.DayX} instance.
+   *
+   * <p> Arguments
+   * <ul>
+   *   <li><code>-h</code> or <code>--help</code></li>
+   *   <li><code>-hf</code> or <code>--helpFileOptions</code></li>
+   * </ul>
+   * <br> prints the corresponding help to the console. Then the program halts.
+   *
+   * <p> Arguments related to file options sets the appropriate
+   * field in the returned {@link FileName.Builder}:
+   * <ul>
+   *   <li><code>-f</code> or <code>--file</code> calls
+   *       {@link util.FileName.Builder#setFullFilename(String)}</li>
+   *   <li><code>-p</code> or <code>--path</code> calls
+   *       {@link util.FileName.Builder#setPath(String)}</li>
+   *   <li><code>-dp</code> or <code>--directoryParent</code> calls
+   *       {@link util.FileName.Builder#setParent(String)}</li>
+   *   <li><code>-dy</code> or <code>--directoryYear</code> calls
+   *       {@link util.FileName.Builder#setYear(String)}</li>
+   *   <li><code>-d</code> or <code>--directory</code> calls
+   *       {@link util.FileName.Builder#setFolderName(String)}</li>
+   *   <li><code>-n</code> or <code>--fileName</code> calls
+   *       {@link util.FileName.Builder#setFileName(String)}</li>
+   * </ul>
+   *
+   * <p> Remaining arguments are handled with:
+   * <ul>
+   *   <li><code>-noTime</code> or <code>--noPrintTime</code> sets
+   *       the <code>DayX</code> to not print run times</li>
+   *   <li><code>-o</code> or <code>--output</code> set
+   *       <code>Printers</code> to print to the specified file</li>
+   *   <li><code>-alt</code> or <code>--alternaive</code> calls
+   *      {@link base.DayI#setRunMe(Runnable)} with
+   *      {@link base.DayI#runVersusAlternatives(int)}</li>
+   * </ul>
+   *
+   * @param args the original arguments used to call the program.
+   * @param dayI the instance to be run.
+   * @return a {@link FileName.Builder} with specified folder and file names.
+  */
   public static FileName.Builder handleOptions(String[] args, DayI dayI) {
     boolean help = false;
     boolean helpFile = false;
@@ -113,6 +198,16 @@ public class CommandLineOptions {
     return fileNameBuilder;
   }
 
+  /**
+   * Checks if help should be printed.
+   *
+   * <p> Only help or file help is printed. Priority is given to help.
+   *
+   * <p> Halts the program after calling the help or file help printout.
+   *
+   * @param help <code>true</code> if help is to be printed
+   * @param helpFile <code>true</code> if file help is to be printed
+   */
   private static void checkHelp(boolean help, boolean helpFile) {
     if (help) {
       usageHelp();
@@ -125,6 +220,28 @@ public class CommandLineOptions {
     }
   }
 
+  /**
+   * Prints the help.
+   *
+   * <p> Content of the printout:
+   * <pre>
+   *Usage:  java -cp run Year2021.Day&lt;1-25&gt; [OPTIONS]
+   *   Or:  java -cp run AllDays [OPTIONS]
+   *
+   *        -h, --help                     Prints this ;)
+   *        -hf, --helpFileOptions         Usage on the file options
+   *        -noTime, --noPrintTime         Prints only the result, not the execution time
+   *                                       This has no effect if using the `-alt` option
+   *        -alt, --alternative &lt;INTEGER&gt;  Runs alternative implemenations &lt;INTEGER&gt; times.
+   *                                       Note: This option can NOT be used with AllDays!
+   *        -y, --year &lt;4 DIGIT INTEGER&gt;   Runs AllDays for that year only.
+   *                                       Note: This option can ONLY be used with AllDays!
+   *                                       Multiple comma separated years are accepted using
+   *                                       for example "2020, 2021" inluding the double quotes
+   *        -o, --output &lt;FILE&gt;            Prints output to specified file
+   *                                       example -o out\myOutput.txt or -o myOutput.txt
+   *                                       Note: The file will be overwritten!</pre>
+   */
   public final static void usageHelp() {
     String formatUsage = "%n%6s\t%s%n%6s\t%s%n%n";
     String format      = "\t%-29s  %s%n";
@@ -156,6 +273,41 @@ public class CommandLineOptions {
     System.out.printf(format, "", "Note: The file will be overwritten!");
   }
 
+  /**
+   * Prints help for file options.
+   *
+   * <p> Content of the printout:
+   * <pre>
+   *FileOptions:
+   *
+   *        For a class with the fully qualified name of:
+   *                Year2021.Day1
+   *
+   *        the expected location &amp; name of the input file is:
+   *                advent-of-code\resources\2021\sample\Day1.txt
+   *
+   *        divided into:
+   *                executionRoot\directoryParent\directoryYear\directory\filename
+   *
+   *        Options in order of precedence to replace into:
+   *                -f
+   *                executionRoot\-p\filename
+   *                executionRoot\-dp\-dy\-d\-n
+   *
+   *        -f, --file &lt;FILE&gt;               Input data file.
+   *                                        Use the full path or relative path.
+   *        -p, --path &lt;PATH&gt;               the path prior to \filename excluding executionRoot
+   *        -dp, --directoryParent &lt;NAME&gt;   See above
+   *                                        Default is "resources"
+   *        -dy, --directoryYear &lt;NAME&gt;     See above
+   *                                        Default is "2021" for package "Year2021"
+   *        -d, --directory &lt;NAME&gt;          See above
+   *                                        Default is "sample"
+   *        -n, --fileName &lt;NAME&gt;           The filename of the input file
+   *                                        Default is &lt;unqualified ClassName&gt;.txt, like "Day1.txt"
+   *                                        Use % in place of class names. "%B.txt" becomes "Day1B.txt"
+   *                                        The %-wildcard is especially usefull when running "AllDays"</pre>
+   */
   public final static void usageHelpFiles() {
     String formatUsage         = "%n%s%n";
     String formatExplanation   = "%n\t%s%n";
