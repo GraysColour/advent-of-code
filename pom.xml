@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- project coordinates -->
+  <groupId>grays.colour</groupId>
+  <artifactId>advent-of-code</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+
+  <!-- project properties -->
+  <properties>
+    <!-- set encoding to make build platform independent -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>11</maven.compiler.release>
+    <!-- https://stackoverflow.com/questions/4757426/maven-specify-the-outputdirectory-only-for-packaging-a-jar -->
+    <run.dir>run</run.dir>
+  </properties>
+
+  <!-- project dependencies -->
+  <dependencies>
+    <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.8.2</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.9.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <!-- project build -->
+  <build>
+    <directory>${project.basedir}/target</directory>
+    <sourceDirectory>${project.basedir}/source</sourceDirectory>
+    <testSourceDirectory>${project.build.sourceDirectory}/test</testSourceDirectory>
+    <outputDirectory>${project.basedir}/${run.dir}</outputDirectory>
+    <testOutputDirectory>${project.build.outputDirectory}</testOutputDirectory>
+
+
+    <!-- all the special stuff -->
+    <plugins>
+
+      <!-- Making sure there's no resources folder in /run -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>initial-clean</id>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <excludeDefaultDirectories>true</excludeDefaultDirectories>
+              <filesets>
+                <fileset>
+                  <directory>${project.build.outputDirectory}</directory>
+                  <includes>
+                    <include>resources/</include>
+                  </includes>
+                </fileset>
+              </filesets>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- test need to be familiar with junit5 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <!-- <version>2.12.4</version> is the default :O !!! It's from September 2012! -->
+        <version>3.0.0-M5</version>
+      </plugin>
+
+      <!-- compiler -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.10.0</version>
+        <executions>
+          <!-- Don't compile test nor javaDoc specific files -->
+          <execution>
+            <id>default-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <excludes>
+                <exclude>**/package-info.java</exclude>
+                <exclude>test/</exclude>
+                <exclude>javaDoc/</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <!-- Only compile test -->
+          <execution>
+            <id>default-testCompile</id>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>test/*Test.java</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Create the properties files -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <executions>
+          <execution>
+            <phase>process-test-sources</phase>
+            <goals>
+              <goal>write-project-properties</goal>
+            </goals>
+            <configuration>
+              <outputFile>${project.build.outputDirectory}/config.properties</outputFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- resources -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <!-- not copying resources, so removing "skip non existing resourceDirectory" -->
+          <execution>
+              <id>default-resources</id>
+              <phase>none</phase>
+          </execution>
+          <!-- not copying test resources, so removing "skip non existing resourceDirectory" -->
+          <execution>
+              <id>default-testResources</id>
+              <phase>none</phase>
+          </execution>
+          <!-- copy the resource samples only -->
+          <execution>
+            <id>copy-resources</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/${run.dir}/resources</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${basedir}/resources/</directory>
+                    <includes>
+                      <include>**/sample/*</include>
+                      <include>**/_results_/sample/*</include>
+                      <include>**/_results_/results.json</include>
+                    </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Don't package the test -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.2</version>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <configuration>
+              <archive>
+                <manifest>
+                  <addClasspath>true</addClasspath>
+                  <mainClass>AllDays</mainClass>
+                </manifest>
+              </archive>
+              <excludes>
+                <exclude>test/</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- javaDoc -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.3.2</version>
+        <configuration>
+          <javadocDirectory>${basedir}/source/javaDoc</javadocDirectory>
+          <reportOutputDirectory>${basedir}</reportOutputDirectory>
+          <quiet>true</quiet>
+          <destDir>javadoc</destDir>
+          <nosince>true</nosince>
+          <author>false</author>
+          <windowtitle>GraysColour's Advent of Code</windowtitle>
+          <doctitle>GraysColour's Advent of Code</doctitle>
+          <overview>${basedir}/source/javaDoc/overview.html</overview>
+          <header><![CDATA[<p style="text-align:center;font-weight:bold;">GraysColour's Advent of Code</p>]]></header>
+          <bottom>Copyright © GraysColour. All rights reserved.</bottom>
+          <sourcepath>${basedir}/source</sourcepath>
+          <sourceFileIncludes>
+            <sourceFileInclude>base/*</sourceFileInclude>
+            <sourceFileInclude>absbase/*</sourceFileInclude>
+            <sourceFileInclude>util/*</sourceFileInclude>
+          </sourceFileIncludes>
+          <addStylesheets>
+            <addStylesheet>style.css</addStylesheet>
+          </addStylesheets>
+        </configuration>
+      </plugin>
+
+      <!-- INFO on folder setup -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>project-directories</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+              <target>
+                <echo message="Source Directory: ${project.build.sourceDirectory}" level="info"/>
+                <echo message="Compile Directory: ${project.build.outputDirectory}" level="info"/>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-directories</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>process-test-sources</phase>
+            <configuration>
+              <target>
+                <echo message="Test Source Directory: ${project.build.testSourceDirectory}" level="info"/>
+                <echo message="Test Compile Directory: ${project.build.testOutputDirectory}" level="info"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
