@@ -1,0 +1,141 @@
+// https://javabydeveloper.com/gradle-system-properties-via-command-line-step-by-step-example/
+def rundir = System.getProperty('run.dir') ? System.getProperty('run.dir') : 'run'
+
+group 'grays.colour'
+version '1.0'
+// for name see jar.archiveBaseName
+
+
+repositories {
+  mavenCentral()
+}
+
+
+apply plugin: 'java'
+
+compileJava {
+  options.release = 11
+  options.encoding = 'UTF-8'
+}
+
+
+dependencies.testImplementation (
+  [group: 'org.junit.jupiter',    name: 'junit-jupiter', version: '5.8.2'],
+  [group: 'com.google.code.gson', name: 'gson',          version: '2.9.0']
+)
+
+
+sourceSets {
+  main.java {
+    srcDirs = ['source']
+    exclude '**/test/*'
+    destinationDirectory.set(file("${rundir}"));
+  }
+  test.java {
+    srcDirs = ['source/test']
+    include '*Test.java'
+    destinationDirectory.set(file("${rundir}"))
+  }
+}
+
+
+// There are no recources
+processResources.onlyIf { false }
+processTestResources.onlyIf { false }
+
+
+test {
+  dependsOn 'deleteSamples'
+
+  useJUnitPlatform()
+  include 'test/*Test.*'
+
+  // from https://stackoverflow.com/a/36130467
+  // by https://stackoverflow.com/users/2670370/shubham-chaudhary
+  afterSuite { desc, result ->
+      if (!desc.parent) { // will match the outermost suite
+          def output = "Test results: ${result.resultType} " +
+                       "(${result.testCount} tests, " +
+                       "${result.successfulTestCount} passed, " +
+                       "${result.failedTestCount} failed, " +
+                       "${result.skippedTestCount} skipped)"
+          def startItem = '|  '
+          def endItem = '  |'
+          def repeatLength = startItem.length() + output.length() + endItem.length()
+          println(' ' + ('-' * (repeatLength - 2)) + ' \n' + startItem +
+                  output +
+                  endItem + '\n ' + ('-' * (repeatLength - 2)))
+      }
+  }
+}
+
+
+jar {
+  dependsOn = ['copySamples', 'test', 'CreateProperty']
+
+  archiveBaseName = 'advent-of-code'
+  manifest.attributes 'Main-Class' : 'AllDays'
+  excludes = ['test']
+}
+
+
+javadoc {
+  options.classpath file("${sourceSets.main.java.srcDirs}")
+  includes = [
+              'base/*',
+              'absbase/*',
+              'util/*'
+  ]
+
+  destinationDir = file("${rootDir}/javadoc")
+  options.optionFiles file("${rootDir}/source/javaDoc/args.txt")
+}
+
+
+tasks.register('copySamples', Copy) {
+  group 'Samples'
+  description 'Copies sample resources'
+  dependsOn 'test'
+
+  from "${rootDir}/resources"
+  includes = [
+              '*/sample/*',
+              '*/_results_/sample/*',
+              '*/_results_/results.json'
+  ]
+
+  into "${rundir}/resources"
+}
+
+tasks.register('deleteSamples', Delete) {
+  group 'Samples'
+  description 'Removes copied sample resources'
+  delete "${rundir}/resources"
+}
+
+
+tasks.register('CreateProperty', WriteProperties) {
+  group 'Build'
+  description 'Creates config.properties file'
+  dependsOn 'test'
+
+  outputFile = file("${rundir}/config.properties")
+  property 'run.dir', "${rundir}"
+}
+
+
+task printDirectories() {
+  group 'Printout'
+  description 'Source and destination directories'
+
+  // https://www.baeldung.com/gradle-source-sets
+  doLast{
+    println "--> Project Directory: ${rootDir}"
+    println "--> Build directory: ${buildDir}"
+    sourceSets.each { srcSet ->
+      println "\n[${srcSet.name}]"
+      print "--> Source directories: ${srcSet.allJava.srcDirs}\n"
+      print "--> Output directories: ${srcSet.output.classesDirs.files}\n"
+    }
+  }
+}
