@@ -70,5 +70,11 @@
       "part1": 226,
       "part2": 3509
     }
+  },
+  "Day13": {
+    "sample": {
+      "part1": 17,
+      "part2": "ascII"
+    }
   }
 }
